@@ -1,188 +1,179 @@
-import java.util.Scanner;
+import java.util.*;
 
 public class Main {
 
     static Scanner sc = new Scanner(System.in);
     static StudentService service = new StudentService();
 
-    public static void main(String[] args) {
+    // Read subjects and marks with validation
+    public static Map<String, Integer> readMarks() {
 
-        while (true) {
-
-            System.out.println("\n===== STUDENT MANAGEMENT SYSTEM =====");
-            System.out.println("1. Add Student");
-            System.out.println("2. Update Student");
-            System.out.println("3. Update Subject Marks");
-            System.out.println("4. Search Student");
-            System.out.println("5. Delete Student");
-            System.out.println("6. Display All Students");
-            System.out.println("7. Student Performance Report");
-            System.out.println("8. Overall Performance Summary");
-            System.out.println("9. Exit");
-
-            System.out.print("Enter your choice: ");
-
-            int choice;
-            try {
-                choice = Integer.parseInt(sc.nextLine().trim());
-            } catch (NumberFormatException e) {
-                System.out.println("Invalid input! Please enter a number between 1 and 9.");
-                continue;
-            }
-
-            switch (choice) {
-
-                case 1:
-                    addStudent();
-                    break;
-
-                case 2:
-                    updateStudent();
-                    break;
-
-                case 3:
-                    updateMarks();
-                    break;
-
-                case 4:
-                    searchStudent();
-                    break;
-
-                case 5:
-                    deleteStudent();
-                    break;
-
-                case 6:
-                    service.displayAllStudents();
-                    break;
-
-                case 7:
-                    performanceReport();
-                    break;
-
-                case 8:
-                    service.overallSummary();
-                    break;
-
-                case 9:
-                    System.out.println("Thank you for using Student Management System!");
-                    sc.close();
-                    return;
-
-                default:
-                    System.out.println("Invalid choice! Please select 1 to 9.");
-            }
-        }
-    }
-
-    // ADD STUDENT
-    static void addStudent() {
-
-        System.out.print("Enter Student ID: ");
-        int id = Integer.parseInt(sc.nextLine().trim());
-
-        System.out.print("Enter Name: ");
-        String name = sc.nextLine().trim();
-
-        System.out.print("Enter Age: ");
-        int age = Integer.parseInt(sc.nextLine().trim());
-
-        Student student = new Student(id, name, age);
+        Map<String, Integer> marks = new LinkedHashMap<>();
 
         System.out.print("Enter number of subjects: ");
-        int count = Integer.parseInt(sc.nextLine().trim());
+        int count = sc.nextInt();
+        sc.nextLine();
 
-        for (int i = 0; i < count; i++) {
+        for (int i = 1; i <= count; i++) {
 
-            System.out.print("Enter Subject Name: ");
+            System.out.print("Enter subject name: ");
             String subject = sc.nextLine().trim();
 
-            System.out.print("Enter Marks (0-100): ");
-            double marks = Double.parseDouble(sc.nextLine().trim());
-
-            if (marks < 0 || marks > 100) {
-                System.out.println("Invalid marks! Enter between 0 and 100.");
+            if (marks.containsKey(subject)) {
+                System.out.println("Subject already entered. Try again.");
                 i--;
                 continue;
             }
 
-            student.addSubject(subject, marks);
+            int mark;
+
+            while (true) {
+
+                System.out.print("Enter marks (0-100): ");
+
+                if (!sc.hasNextInt()) {
+                    System.out.println("Please enter a valid number.");
+                    sc.nextLine();
+                    continue;
+                }
+
+                mark = sc.nextInt();
+                sc.nextLine();
+
+                if (mark >= 0 && mark <= 100) {
+                    break;
+                }
+
+                System.out.println("Marks must be between 0 and 100.");
+            }
+
+            marks.put(subject, mark);
         }
 
-        service.addStudent(student);
+        return marks;
     }
 
-    // UPDATE STUDENT
-    static void updateStudent() {
+    public static void main(String[] args) {
 
-        System.out.print("Enter Student ID: ");
-        int id = Integer.parseInt(sc.nextLine().trim());
+        int choice;
 
-        System.out.print("Enter New Name: ");
-        String name = sc.nextLine().trim();
+        do {
 
-        System.out.print("Enter New Age: ");
-        int age = Integer.parseInt(sc.nextLine().trim());
+            System.out.println("\n===== STUDENT MANAGEMENT SYSTEM =====");
+            System.out.println("1. Add Student");
+            System.out.println("2. Update Student");
+            System.out.println("3. Search Student by ID");
+            System.out.println("4. Search Student by Name");
+            System.out.println("5. Delete Student");
+            System.out.println("6. Display All Students");
+            System.out.println("7. Performance Summary");
+            System.out.println("8. Exit");
 
-        service.updateStudent(id, name, age);
-    }
+            System.out.print("\nEnter your choice: ");
 
-    // UPDATE MARKS
-    static void updateMarks() {
+            while (!sc.hasNextInt()) {
+                System.out.println("Enter a valid menu number.");
+                sc.nextLine();
+            }
 
-        System.out.print("Enter Student ID: ");
-        int id = Integer.parseInt(sc.nextLine().trim());
+            choice = sc.nextInt();
+            sc.nextLine();
 
-        System.out.print("Enter Subject Name: ");
-        String subject = sc.nextLine().trim();
+            switch (choice) {
 
-        System.out.print("Enter New Marks: ");
-        double marks = Double.parseDouble(sc.nextLine().trim());
+                case 1:
 
-        if (marks < 0 || marks > 100) {
-            System.out.println("Invalid marks! Must be between 0 and 100.");
-            return;
-        }
+                    System.out.print("Enter Student ID: ");
+                    int id = sc.nextInt();
+                    sc.nextLine();
 
-        service.updateMarks(id, subject, marks);
-    }
+                    System.out.print("Enter Student Name: ");
+                    String name = sc.nextLine().trim();
 
-    // SEARCH STUDENT
-    static void searchStudent() {
+                    System.out.print("Enter Department: ");
+                    String department = sc.nextLine().trim();
 
-        System.out.print("Enter Student ID: ");
-        int id = Integer.parseInt(sc.nextLine().trim());
+                    Map<String, Integer> marks = readMarks();
 
-        Student student = service.searchStudent(id);
+                    Student student = new Student(id, name, department);
 
-        if (student != null) {
-            student.displayStudent();
-        } else {
-            System.out.println("Student not found!");
-        }
-    }
+                    for (Map.Entry<String, Integer> entry : marks.entrySet()) {
+                        student.addSubject(entry.getKey(), entry.getValue());
+                    }
 
-    // DELETE STUDENT
-    static void deleteStudent() {
+                    service.addStudent(student);
+                    break;
 
-        System.out.print("Enter Student ID: ");
-        int id = Integer.parseInt(sc.nextLine().trim());
+                case 2:
 
-        service.deleteStudent(id);
-    }
+                    System.out.print("Enter Student ID to update: ");
+                    int updateId = sc.nextInt();
+                    sc.nextLine();
 
-    // INDIVIDUAL PERFORMANCE REPORT
-    static void performanceReport() {
+                    System.out.print("Enter New Name: ");
+                    String newName = sc.nextLine().trim();
 
-        System.out.print("Enter Student ID: ");
-        int id = Integer.parseInt(sc.nextLine().trim());
+                    System.out.print("Enter New Department: ");
+                    String newDepartment = sc.nextLine().trim();
 
-        Student student = service.searchStudent(id);
+                    Map<String, Integer> newMarks = readMarks();
 
-        if (student != null) {
-            GradeCalculator.performanceReport(student);
-        } else {
-            System.out.println("Student not found!");
-        }
+                    service.updateStudent(
+                            updateId,
+                            newName,
+                            newDepartment,
+                            newMarks
+                    );
+                    break;
+
+                case 3:
+
+                    System.out.print("Enter Student ID: ");
+                    int searchId = sc.nextInt();
+                    sc.nextLine();
+
+                    service.searchStudent(searchId);
+                    break;
+
+                case 4:
+
+                    System.out.print("Enter Student Name: ");
+                    String searchName = sc.nextLine().trim();
+
+                    service.searchByName(searchName);
+                    break;
+
+                case 5:
+
+                    System.out.print("Enter Student ID to delete: ");
+                    int deleteId = sc.nextInt();
+                    sc.nextLine();
+
+                    service.deleteStudent(deleteId);
+                    break;
+
+                case 6:
+
+                    service.displayAllStudents();
+                    break;
+
+                case 7:
+
+                    service.performanceSummary();
+                    break;
+
+                case 8:
+
+                    System.out.println("Thank you for using the system!");
+                    break;
+
+                default:
+
+                    System.out.println("Invalid choice! Try again.");
+            }
+
+        } while (choice != 8);
+
+        sc.close();
     }
 }

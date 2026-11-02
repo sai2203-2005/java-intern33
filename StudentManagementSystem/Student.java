@@ -3,32 +3,33 @@ import java.util.Map;
 
 public class Student {
 
-    private int id;
+    private int studentId;
     private String name;
-    private int age;
+    private String department;
 
-    private Map<String, Double> subjectMarks;
+    // Subject name and corresponding marks
+    private Map<String, Integer> subjectMarks;
 
-    public Student(int id, String name, int age) {
-        this.id = id;
+    public Student(int studentId, String name, String department) {
+        this.studentId = studentId;
         this.name = name;
-        this.age = age;
+        this.department = department;
         this.subjectMarks = new LinkedHashMap<>();
     }
 
-    public int getId() {
-        return id;
+    public int getStudentId() {
+        return studentId;
     }
 
     public String getName() {
         return name;
     }
 
-    public int getAge() {
-        return age;
+    public String getDepartment() {
+        return department;
     }
 
-    public Map<String, Double> getSubjectMarks() {
+    public Map<String, Integer> getSubjectMarks() {
         return subjectMarks;
     }
 
@@ -36,29 +37,67 @@ public class Student {
         this.name = name;
     }
 
-    public void setAge(int age) {
-        this.age = age;
+    public void setDepartment(String department) {
+        this.department = department;
     }
 
-    public void addSubject(String subject, double marks) {
+    public void addSubject(String subject, int marks) {
         subjectMarks.put(subject, marks);
     }
 
-    public void displayStudent() {
-
-        System.out.println("\nStudent ID: " + id);
-        System.out.println("Name: " + name);
-        System.out.println("Age: " + age);
-
-        System.out.println("Subject Marks:");
+    public double calculateAverage() {
 
         if (subjectMarks.isEmpty()) {
-            System.out.println("  No subjects enrolled yet.");
-            return;
+            return 0;
         }
 
-        for (Map.Entry<String, Double> entry : subjectMarks.entrySet()) {
-            System.out.println("  " + entry.getKey() + " : " + entry.getValue());
+        int total = 0;
+
+        for (int marks : subjectMarks.values()) {
+            total += marks;
         }
+
+        return (double) total / subjectMarks.size();
+    }
+
+    public double calculatePercentage() {
+        // Each subject is out of 100
+        return calculateAverage();
+    }
+
+    public String calculateGrade() {
+
+        double average = calculateAverage();
+
+        if (average >= 90) {
+            return "A+";
+        } else if (average >= 80) {
+            return "A";
+        } else if (average >= 70) {
+            return "B";
+        } else if (average >= 60) {
+            return "C";
+        } else if (average >= 50) {
+            return "D";
+        } else if (average >= 35) {
+            return "E";
+        } else {
+            return "F";
+        }
+    }
+
+    public boolean isPassed() {
+
+        if (subjectMarks.isEmpty()) {
+            return false;
+        }
+
+        for (int marks : subjectMarks.values()) {
+            if (marks < 35) {
+                return false;
+            }
+        }
+
+        return true;
     }
 }

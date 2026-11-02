@@ -1,37 +1,30 @@
-import java.util.ArrayList;
+import java.util.*;
 
 public class StudentService {
 
-    private ArrayList<Student> students = new ArrayList<>();
+    // Store student ID and Student object (maintains insertion order)
+    private Map<Integer, Student> students = new LinkedHashMap<>();
 
-    // ADD STUDENT
+    // 1. Add Student
     public void addStudent(Student student) {
 
-        if (searchStudent(student.getId()) != null) {
+        int id = student.getStudentId();
+
+        if (students.containsKey(id)) {
             System.out.println("Student ID already exists!");
             return;
         }
 
-        students.add(student);
+        students.put(id, student);
         System.out.println("Student added successfully!");
     }
 
-    // SEARCH STUDENT
-    public Student searchStudent(int id) {
+    // 2. Update Student
+    public void updateStudent(int id, String name,
+                              String department,
+                              Map<String, Integer> marks) {
 
-        for (Student student : students) {
-            if (student.getId() == id) {
-                return student;
-            }
-        }
-
-        return null;
-    }
-
-    // UPDATE STUDENT
-    public void updateStudent(int id, String name, int age) {
-
-        Student student = searchStudent(id);
+        Student student = students.get(id);
 
         if (student == null) {
             System.out.println("Student not found!");
@@ -39,44 +32,56 @@ public class StudentService {
         }
 
         student.setName(name);
-        student.setAge(age);
+        student.setDepartment(department);
+
+        student.getSubjectMarks().clear();
+        student.getSubjectMarks().putAll(marks);
+
         System.out.println("Student updated successfully!");
     }
 
-    // DELETE STUDENT
+    // 3. Search Student by ID
+    public void searchStudent(int id) {
+
+        Student student = students.get(id);
+
+        if (student == null) {
+            System.out.println("Student not found!");
+            return;
+        }
+
+        displayStudent(student);
+    }
+
+    // 4. Search Student by Name
+    public void searchByName(String name) {
+
+        boolean found = false;
+
+        for (Student student : students.values()) {
+
+            if (student.getName().equalsIgnoreCase(name)) {
+                displayStudent(student);
+                found = true;
+            }
+        }
+
+        if (!found) {
+            System.out.println("Student not found!");
+        }
+    }
+
+    // 5. Delete Student
     public void deleteStudent(int id) {
 
-        Student student = searchStudent(id);
-
-        if (student == null) {
+        if (students.remove(id) != null) {
+            System.out.println("Student deleted successfully!");
+        } else {
             System.out.println("Student not found!");
-            return;
         }
-
-        students.remove(student);
-        System.out.println("Student deleted successfully!");
     }
 
-    // UPDATE SUBJECT MARKS
-    public void updateMarks(int id, String subject, double marks) {
-
-        Student student = searchStudent(id);
-
-        if (student == null) {
-            System.out.println("Student not found!");
-            return;
-        }
-
-        if (!student.getSubjectMarks().containsKey(subject)) {
-            System.out.println("Subject not found!");
-            return;
-        }
-
-        student.addSubject(subject, marks);
-        System.out.println("Marks updated successfully!");
-    }
-
-    // DISPLAY ALL STUDENTS
+    // 6. Display All Students
     public void displayAllStudents() {
 
         if (students.isEmpty()) {
@@ -84,13 +89,41 @@ public class StudentService {
             return;
         }
 
-        for (Student student : students) {
-            student.displayStudent();
+        for (Student student : students.values()) {
+            displayStudent(student);
         }
     }
 
-    // OVERALL PERFORMANCE SUMMARY
-    public void overallSummary() {
+    // 7. Display Individual Student Details
+    public void displayStudent(Student student) {
+
+        System.out.println("\n========== STUDENT DETAILS ==========");
+        System.out.println("Student ID: " + student.getStudentId());
+        System.out.println("Name: " + student.getName());
+        System.out.println("Department: " + student.getDepartment());
+
+        System.out.println("\nSubject Marks:");
+
+        for (Map.Entry<String, Integer> entry : student.getSubjectMarks().entrySet()) {
+            System.out.println(entry.getKey() + " : " + entry.getValue());
+        }
+
+        System.out.println("\nAverage: " +
+                String.format("%.2f", student.calculateAverage()));
+
+        System.out.println("Percentage: " +
+                String.format("%.2f", student.calculatePercentage()) + "%");
+
+        System.out.println("Grade: " + student.calculateGrade());
+
+        System.out.println("Result: " +
+                (student.isPassed() ? "PASS" : "FAIL"));
+
+        System.out.println("=====================================");
+    }
+
+    // 8. Generate Overall Performance Summary
+    public void performanceSummary() {
 
         if (students.isEmpty()) {
             System.out.println("No student records available!");
@@ -99,15 +132,17 @@ public class StudentService {
 
         double totalAverage = 0;
         double highestAverage = -1;
-        double lowestAverage = Double.MAX_VALUE;
+        double lowestAverage = 101;
 
         Student topper = null;
+        Student lowestStudent = null;
+
         int passed = 0;
         int failed = 0;
 
-        for (Student student : students) {
+        for (Student student : students.values()) {
 
-            double average = GradeCalculator.calculateAverage(student);
+            double average = student.calculateAverage();
             totalAverage += average;
 
             if (average > highestAverage) {
@@ -117,22 +152,36 @@ public class StudentService {
 
             if (average < lowestAverage) {
                 lowestAverage = average;
+                lowestStudent = student;
             }
 
-            if (GradeCalculator.calculateGrade(average).equals("F")) {
-                failed++;
-            } else {
+            if (student.isPassed()) {
                 passed++;
+            } else {
+                failed++;
             }
         }
 
-        System.out.println("\n===== OVERALL PERFORMANCE SUMMARY =====");
+        double classAverage = totalAverage / students.size();
+
+        System.out.println("\n======= ACADEMIC PERFORMANCE SUMMARY =======");
         System.out.println("Total Students: " + students.size());
-        System.out.printf("Class Average: %.2f%n", (totalAverage / students.size()));
-        System.out.println("Topper: " + (topper != null ? topper.getName() : "N/A"));
-        System.out.printf("Highest Average: %.2f%n", highestAverage);
-        System.out.printf("Lowest Average: %.2f%n", (lowestAverage == Double.MAX_VALUE ? 0.0 : lowestAverage));
+        System.out.println("Class Average: " + String.format("%.2f", classAverage));
         System.out.println("Passed Students: " + passed);
         System.out.println("Failed Students: " + failed);
+        System.out.println("Pass Percentage: " +
+                String.format("%.2f", (passed * 100.0) / students.size()) + "%");
+
+        if (topper != null) {
+            System.out.println("\nTopper: " + topper.getName());
+            System.out.println("Highest Average: " + String.format("%.2f", highestAverage));
+        }
+
+        if (lowestStudent != null) {
+            System.out.println("Lowest Performer: " + lowestStudent.getName());
+            System.out.println("Lowest Average: " + String.format("%.2f", lowestAverage));
+        }
+
+        System.out.println("============================================");
     }
 }
